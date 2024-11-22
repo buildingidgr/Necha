@@ -9,7 +9,6 @@ export const createProject = async (req, res) => {
 
     // Validate request body
     const { error, value } = projectSchema.validate(req.body, {
-      context: { now: now.toISOString() },
       abortEarly: false
     });
     
@@ -22,6 +21,19 @@ export const createProject = async (req, res) => {
           field: detail.path.join('.'),
           message: detail.message
         }))
+      });
+    }
+
+    // Additional date validation
+    const startDate = new Date(value.startDate);
+    if (startDate < now) {
+      return res.status(400).json({
+        error: 'validation_error',
+        message: 'Invalid request body',
+        details: [{
+          field: 'startDate',
+          message: 'Start date must be greater than or equal to the current date'
+        }]
       });
     }
 

@@ -5,6 +5,13 @@ import projectRoutes from './routes/projectRoutes.js';
 
 dotenv.config();
 
+// Set timezone to UTC
+process.env.TZ = 'UTC';
+
+if (!process.env.AUTH_SERVICE_URL) {
+  console.warn('AUTH_SERVICE_URL is not set. Using default: http://localhost:3000');
+}
+
 const app = express();
 
 app.use(express.json());

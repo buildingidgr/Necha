@@ -6,7 +6,7 @@ const projectSchema = Joi.object({
   subtype: Joi.string().required(),
   priority: Joi.string().valid('low', 'medium', 'high', 'urgent').required(),
   description: Joi.string().required(),
-  startDate: Joi.date().iso().min(Joi.ref('$now')).required(),
+  startDate: Joi.date().iso().required(),
   estimatedCompletionDate: Joi.date().iso().min(Joi.ref('startDate')).required(),
   clientId: Joi.string().optional(),
   location: Joi.object({
