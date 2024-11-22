@@ -1,4 +1,4 @@
-import { isISO4217Currency } from 'validator';
+import validator from 'validator';
 
 export const validateProjectCreation = (req, res, next) => {
   const { name, type, subtype, priority, description, startDate, estimatedCompletionDate, clientId, location, budget } = req.body;
@@ -57,7 +57,7 @@ export const validateProjectCreation = (req, res, next) => {
     errors.push({ field: 'budget.allocated', message: 'Invalid budget allocation' });
   }
 
-  if (!budget || !isISO4217Currency(budget.currency)) {
+  if (!budget || !validator.isISO4217(budget.currency)) {
     errors.push({ field: 'budget.currency', message: 'Invalid currency code' });
   }
 
