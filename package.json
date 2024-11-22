@@ -1,21 +1,24 @@
 {
-  "name": "necha-api",
+  "name": "projects-api",
   "version": "1.0.0",
-  "description": "Civil engineering project management API",
-  "main": "src/index.js",
-  "type": "module",
+  "description": "API for managing projects",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "mongoose": "^7.0.3",
-    "validator": "^13.9.0"
+    "next": "^12.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "jose": "^4.11.2",
+    "mongoose": "^6.0.12"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "@types/react": "^17.0.30",
+    "@types/node": "^16.11.7",
+    "typescript": "^4.4.4"
   }
 }
 
