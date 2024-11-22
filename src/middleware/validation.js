@@ -1,71 +1,45 @@
-import { isISO4217Currency } from 'validator';
+import validator from 'validator';
+const { isISO4217Currency } = validator;
 
-export const validateProjectCreation = (req, res, next) => {
-  const { name, type, subtype, priority, description, startDate, estimatedCompletionDate, clientId, location, budget } = req.body;
+import Joi from 'joi';
 
-  const errors = [];
+export const validateProject = (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().min(3).max(200).required(),
+    type: Joi.string().valid('infrastructure', 'residential', 'commercial', 'industrial').required(),
+    subtype: Joi.string().required(),
+    priority: Joi.string().valid('low', 'medium', 'high', 'urgent').required(),
+    description: Joi.string().required(),
+    startDate: Joi.date().iso().min('now').required(),
+    estimatedCompletionDate: Joi.date().iso().min(Joi.ref('startDate')).required(),
+    clientId: Joi.string().optional(),
+    location: Joi.object({
+      coordinates: Joi.object({
+        latitude: Joi.number().min(-90).max(90).required(),
+        longitude: Joi.number().min(-180).max(180).required()
+      }).required(),
+      address: Joi.string().required()
+    }).required(),
+    budget: Joi.object({
+      allocated: Joi.number().positive().precision(2).required(),
+      currency: Joi.string().custom((value, helpers) => {
+        if (!isISO4217Currency(value)) {
+          return helpers.error('any.invalid');
+        }
+        return value;
+      }, 'validate ISO 4217 currency code').required()
+    }).required()
+  });
 
-  if (!name || name.length < 3 || name.length > 200) {
-    errors.push({ field: 'name', message: 'Project name must be between 3 and 200 characters' });
-  }
-
-  if (!['infrastructure', 'residential', 'commercial', 'industrial'].includes(type)) {
-    errors.push({ field: 'type', message: 'Invalid project type' });
-  }
-
-  if (!subtype) {
-    errors.push({ field: 'subtype', message: 'Project subtype is required' });
-  }
-
-  if (!['low', 'medium', 'high', 'urgent'].includes(priority)) {
-    errors.push({ field: 'priority', message: 'Invalid priority level' });
-  }
-
-  if (!description) {
-    errors.push({ field: 'description', message: 'Project description is required' });
-  }
-
-  const currentDate = new Date();
-  const parsedStartDate = new Date(startDate);
-  const parsedCompletionDate = new Date(estimatedCompletionDate);
-
-  if (isNaN(parsedStartDate) || parsedStartDate <= currentDate) {
-    errors.push({ field: 'startDate', message: 'Start date must be a future date' });
-  }
-
-  if (isNaN(parsedCompletionDate) || parsedCompletionDate <= parsedStartDate) {
-    errors.push({ field: 'estimatedCompletionDate', message: 'Estimated completion date must be after the start date' });
-  }
-
-  if (clientId && typeof clientId !== 'string') {
-    errors.push({ field: 'clientId', message: 'Invalid client ID' });
-  }
-
-  if (!location || !location.coordinates || !location.address) {
-    errors.push({ field: 'location', message: 'Invalid location information' });
-  } else {
-    const { latitude, longitude } = location.coordinates;
-    if (typeof latitude !== 'number' || latitude < -90 || latitude > 90) {
-      errors.push({ field: 'location.coordinates.latitude', message: 'Invalid latitude' });
-    }
-    if (typeof longitude !== 'number' || longitude < -180 || longitude > 180) {
-      errors.push({ field: 'location.coordinates.longitude', message: 'Invalid longitude' });
-    }
-  }
-
-  if (!budget || typeof budget.allocated !== 'number' || budget.allocated <= 0) {
-    errors.push({ field: 'budget.allocated', message: 'Invalid budget allocation' });
-  }
-
-  if (!budget || !isISO4217Currency(budget.currency)) {
-    errors.push({ field: 'budget.currency', message: 'Invalid currency code' });
-  }
-
-  if (errors.length > 0) {
+  const { error } = schema.validate(req.body);
+  if (error) {
     return res.status(400).json({
       error: 'validation_error',
       message: 'Invalid request body',
-      details: errors,
+      details: error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message
+      }))
     });
   }
 
