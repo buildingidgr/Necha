@@ -5,6 +5,17 @@ import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
+// New test-auth route
+router.get('/test-auth', async (req, res) => {
+  try {
+    const response = await fetch(`${process.env.AUTH_SERVICE_URL}/api/auth/get-token`);
+    const data = await response.text();
+    res.send(`Auth service response: ${data}`);
+  } catch (error) {
+    res.status(500).send(`Error contacting auth service: ${error.message}`);
+  }
+});
+
 // Rate limiting middleware
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
@@ -13,6 +24,11 @@ const apiLimiter = rateLimit({
 });
 
 router.post('/projects', authenticateToken, apiLimiter, createProject);
+
+// New test route
+router.get('/test', (req, res) => {
+  res.json({ message: 'API is working' });
+});
 
 export default router;
 
