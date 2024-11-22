@@ -4,13 +4,17 @@ import projectSchema from '../validators/projectValidator.js';
 export const createProject = async (req, res) => {
   try {
     const now = new Date();
+    console.log('Server current time (UTC):', now.toUTCString());
+    console.log('Received startDate:', req.body.startDate);
+
     // Validate request body
     const { error, value } = projectSchema.validate(req.body, {
-      context: { now },
+      context: { now: now.toISOString() },
       abortEarly: false
     });
     
     if (error) {
+      console.log('Validation error:', error);
       return res.status(400).json({
         error: 'validation_error',
         message: 'Invalid request body',
